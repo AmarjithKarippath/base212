@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { fetchMe, fetchRoles, logout, sendChat, startGoogleLogin } from './api'
+import { fetchMe, fetchRoles, logout, recordVisit, sendChat, startGoogleLogin } from './api'
+import { AdminPanel } from './components/AdminPanel'
 import { ChatView } from './components/ChatView'
 import { LoginModal } from './components/LoginModal'
 import type { ChatMessage, RoleDefinition, UserProfile } from './types'
@@ -23,7 +24,7 @@ export default function App() {
   const [loginReason, setLoginReason] = useState<'second-chat' | 'manual'>('manual')
 
   useEffect(() => {
-    Promise.all([fetchRoles(), fetchMe()])
+    Promise.all([fetchRoles(), fetchMe(), recordVisit()])
       .then(([catalog, profile]) => {
         setRoles(catalog.roles)
         setAllowMultiple(catalog.roleSelection.allowMultiple)
@@ -118,6 +119,14 @@ export default function App() {
     return (
       <div className="app app--loading">
         <div className="loader">Loading base212...</div>
+      </div>
+    )
+  }
+
+  if (window.location.pathname === '/admin') {
+    return (
+      <div className="app">
+        <AdminPanel user={user} />
       </div>
     )
   }

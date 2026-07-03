@@ -40,6 +40,23 @@ export interface UserProfile {
   email: string | null
   name: string | null
   picture: string | null
+  is_admin: boolean
+}
+
+export interface DailyCount {
+  date: string
+  count: number
+}
+
+export interface AdminStats {
+  total_sessions: number
+  visits_without_message: number
+  total_queries: number
+  total_users: number
+  logins_by_date: DailyCount[]
+  queries_by_date: DailyCount[]
+  sessions_by_date: DailyCount[]
+  visits_without_message_by_date: DailyCount[]
 }
 
 export interface ChatHistoryItem {

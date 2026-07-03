@@ -16,19 +16,26 @@ export function AppHeader({ user, onSignIn, onSignOut }: AppHeaderProps) {
 
       <div className="app-header__actions">
         {user ? (
-          <div className="app-header__user">
-            {user.picture ? (
-              <img
-                className="app-header__avatar"
-                src={user.picture}
-                alt={user.name ?? 'User'}
-              />
+          <>
+            {user.is_admin ? (
+              <a className="app-header__admin" href="/admin">
+                Admin
+              </a>
             ) : null}
-            <span className="app-header__user-name">{user.name ?? user.email}</span>
-            <button type="button" className="app-header__signout" onClick={onSignOut}>
-              Sign out
-            </button>
-          </div>
+            <div className="app-header__user">
+              {user.picture ? (
+                <img
+                  className="app-header__avatar"
+                  src={user.picture}
+                  alt={user.name ?? 'User'}
+                />
+              ) : null}
+              <span className="app-header__user-name">{user.name ?? user.email}</span>
+              <button type="button" className="app-header__signout" onClick={onSignOut}>
+                Sign out
+              </button>
+            </div>
+          </>
         ) : (
           <button type="button" className="app-header__signin" onClick={onSignIn}>
             <GoogleMark />

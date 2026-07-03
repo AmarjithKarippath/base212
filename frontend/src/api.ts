@@ -1,4 +1,4 @@
-import type { ChatHistoryItem, ChatResponse, RoleCatalog, UserProfile } from './types'
+import type { AdminStats, ChatHistoryItem, ChatResponse, RoleCatalog, UserProfile } from './types'
 
 const API_BASE = '/api'
 
@@ -42,6 +42,32 @@ export function fetchMe(): Promise<UserProfile | null> {
 
 export function logout(): Promise<void> {
   return request<void>('/auth/logout', { method: 'POST' })
+}
+
+export async function downloadUsersCsv(): Promise<void> {
+  const response = await fetch(`${API_BASE}/admin/users/export`, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to download users CSV')
+  }
+
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'base212-users.csv'
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+export function recordVisit(): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>('/analytics/visit', { method: 'POST' })
+}
+
+export function fetchAdminStats(): Promise<AdminStats> {
+  return request<AdminStats>('/admin/stats')
 }
 
 export function sendChat(

@@ -1,10 +1,21 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from starlette.middleware.sessions import SessionMiddleware
 
+from app.analytics import (
+    attach_session_cookie,
+    get_admin_stats,
+    get_session_id,
+    get_users_csv,
+    is_admin_email,
+    record_query,
+    record_visit,
+    require_admin,
+    setup_analytics,
+)
 from app.auth import (
     clear_session_cookie,
     finish_google_login,
@@ -20,6 +31,7 @@ from app.schemas import (
     ChatRequest,
     ChatResponse,
 )
+from app.schemas_admin import AdminStats
 from app.schemas_auth import UserProfile
 
 
@@ -27,6 +39,7 @@ from app.schemas_auth import UserProfile
 async def lifespan(_: FastAPI):
     if not settings.novita_api_key.strip():
         raise RuntimeError("NOVITA_API_KEY is required")
+    setup_analytics()
     yield
 
 
@@ -62,7 +75,12 @@ async def auth_me(request: Request) -> UserProfile | None:
     user = get_current_user(request)
     if not user:
         return None
-    return UserProfile.model_validate(user)
+    return UserProfile.model_validate(
+        {
+            **user,
+            "is_admin": is_admin_email(user.get("email")),
+        }
+    )
 
 
 @app.get("/auth/google/login")
@@ -82,8 +100,37 @@ async def auth_logout() -> JSONResponse:
     return response
 
 
-@app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest) -> ChatResponse:
+@app.post("/analytics/visit")
+async def analytics_visit(req: Request):
+    user = get_current_user(req)
+    session_id = get_session_id(req)
+    record_visit(
+        session_id,
+        user.get("sub") if user else None,
+        user.get("email") if user else None,
+    )
+    response = JSONResponse({"ok": True})
+    attach_session_cookie(response, session_id)
+    return response
+
+
+@app.get("/admin/stats", response_model=AdminStats)
+async def admin_stats(_: dict = Depends(require_admin)) -> AdminStats:
+    return AdminStats.model_validate(get_admin_stats())
+
+
+@app.get("/admin/users/export")
+async def admin_users_export(_: dict = Depends(require_admin)):
+    csv_content = get_users_csv()
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="base212-users.csv"'},
+    )
+
+
+@app.post("/chat")
+async def chat(request: ChatRequest, req: Request):
     model = request.model or settings.default_model
 
     try:
@@ -100,13 +147,25 @@ async def chat(request: ChatRequest) -> ChatResponse:
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    return ChatResponse(
+    user = get_current_user(req)
+    session_id = get_session_id(req)
+    record_query(
+        session_id,
+        request.role_ids,
+        user.get("sub") if user else None,
+        user.get("email") if user else None,
+    )
+
+    result = ChatResponse(
         reply=choice.message.content or "",
         model=model,
         selected_roles=selected_roles,
         finish_reason=choice.finish_reason,
         usage=usage,
     )
+    response = JSONResponse(content=result.model_dump())
+    attach_session_cookie(response, session_id)
+    return response
 
 
 @app.post("/v1/chat/completions")

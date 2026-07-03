@@ -1,4 +1,20 @@
 services:
+  db:
+    container_name: base212-db
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: base212
+      POSTGRES_PASSWORD: base212
+      POSTGRES_DB: base212
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U base212 -d base212"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   backend:
     container_name: base212-backend
     build:
@@ -9,8 +25,12 @@ services:
     environment:
       FRONTEND_URL: http://localhost:3009
       GOOGLE_REDIRECT_URI: http://localhost:3009/api/auth/google/callback
+      DATABASE_URL: postgresql://base212:base212@db:5432/base212
     ports:
       - "8008:8000"
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
@@ -23,3 +43,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -22,10 +22,16 @@ class Settings(BaseSettings):
     jwt_secret: str = "change-me-in-production"
     frontend_url: str = "http://localhost:3009"
     session_cookie_secure: bool = False
+    admin_emails: str = "buildbeyondlimit1@gmail.com"
+    database_url: str = "postgresql://base212:base212@localhost:5432/base212"
 
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @property
+    def admin_email_list(self) -> list[str]:
+        return [email.strip().lower() for email in self.admin_emails.split(",") if email.strip()]
 
 
 settings = Settings()

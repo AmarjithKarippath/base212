@@ -6,6 +6,7 @@ from fastapi import HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 
 from app.config import settings
+from app.analytics import record_login
 
 oauth = OAuth()
 oauth.register(
@@ -94,13 +95,17 @@ async def finish_google_login(request: Request) -> RedirectResponse:
     )
 
     response = RedirectResponse(url=redirect_url, status_code=302)
-    set_session_cookie(
-        response,
-        {
-            "sub": user_info["sub"],
-            "email": user_info.get("email"),
-            "name": user_info.get("name"),
-            "picture": user_info.get("picture"),
-        },
+    user_payload = {
+        "sub": user_info["sub"],
+        "email": user_info.get("email"),
+        "name": user_info.get("name"),
+        "picture": user_info.get("picture"),
+    }
+    set_session_cookie(response, user_payload)
+    record_login(
+        user_payload["sub"],
+        user_payload.get("email"),
+        user_payload.get("name"),
+        user_payload.get("picture"),
     )
     return response
