@@ -1,0 +1,22 @@
+services:
+  backend:
+    container_name: base212-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8008:8000"
+    restart: unless-stopped
+
+  frontend:
+    container_name: base212-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3009:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
