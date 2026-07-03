@@ -59,6 +59,13 @@ textarea {
   padding: 1rem 1.25rem 1.5rem;
 }
 
+.chat-view--active {
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  padding-top: 0.5rem;
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -92,10 +99,6 @@ textarea {
   color: #111827;
 }
 
-.chat-view--active {
-  padding-top: 0.5rem;
-}
-
 .hero {
   flex: 1;
   display: flex;
@@ -123,8 +126,10 @@ textarea {
 
 .chat-view__messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding-bottom: 1rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .message-list {
@@ -337,6 +342,7 @@ textarea {
 .chat-panel {
   position: sticky;
   bottom: 0;
+  flex-shrink: 0;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(15, 23, 42, 0.08);
@@ -344,6 +350,10 @@ textarea {
   padding: 1rem;
   box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
   transition: padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-panel--compact {
+  padding-top: 0.75rem;
 }
 
 .role-selector-wrap {
