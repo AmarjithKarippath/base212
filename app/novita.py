@@ -41,11 +41,15 @@ def chat_request_to_completion(
     request: ChatRequest,
     system_prompt: str,
 ) -> ChatCompletionRequest:
+    messages: list[dict[str, str]] = [
+        {"role": "system", "content": system_prompt},
+    ]
+    for item in request.history:
+        messages.append(item.model_dump())
+    messages.append({"role": "user", "content": request.message})
+
     return ChatCompletionRequest(
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": request.message},
-        ],
+        messages=messages,
         model=request.model,
         stream=False,
         max_tokens=request.max_tokens,

@@ -1,9 +1,16 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
+from starlette.middleware.sessions import SessionMiddleware
 
+from app.auth import (
+    clear_session_cookie,
+    finish_google_login,
+    get_current_user,
+    start_google_login,
+)
 from app.config import settings
 from app.novita import create_chat, create_chat_completion, iter_stream_chunks
 from app.roles import format_role_system_prompt, get_role_catalog
@@ -13,6 +20,7 @@ from app.schemas import (
     ChatRequest,
     ChatResponse,
 )
+from app.schemas_auth import UserProfile
 
 
 @asynccontextmanager
@@ -36,6 +44,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(SessionMiddleware, secret_key=settings.jwt_secret)
 
 
 @app.get("/health")
@@ -46,6 +55,31 @@ async def health() -> dict[str, str]:
 @app.get("/roles")
 async def list_roles():
     return get_role_catalog().model_dump()
+
+
+@app.get("/auth/me")
+async def auth_me(request: Request) -> UserProfile | None:
+    user = get_current_user(request)
+    if not user:
+        return None
+    return UserProfile.model_validate(user)
+
+
+@app.get("/auth/google/login")
+async def auth_google_login(request: Request, popup: bool = False):
+    return await start_google_login(request, popup=popup)
+
+
+@app.get("/auth/google/callback")
+async def auth_google_callback(request: Request):
+    return await finish_google_login(request)
+
+
+@app.post("/auth/logout")
+async def auth_logout() -> JSONResponse:
+    response = JSONResponse({"ok": True})
+    clear_session_cookie(response)
+    return response
 
 
 @app.post("/chat", response_model=ChatResponse)

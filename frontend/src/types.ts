@@ -34,3 +34,15 @@ export interface ChatMessage {
   content: string
   selectedRoles?: SelectedRole[]
 }
+
+export interface UserProfile {
+  sub: string
+  email: string | null
+  name: string | null
+  picture: string | null
+}
+
+export interface ChatHistoryItem {
+  role: 'user' | 'assistant'
+  content: string
+}

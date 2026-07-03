@@ -16,6 +16,12 @@ class Settings(BaseSettings):
         "http://localhost:3009,http://127.0.0.1:3009,"
         "https://www.base212.com,https://base212.com"
     )
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_redirect_uri: str = "http://localhost:3009/api/auth/google/callback"
+    jwt_secret: str = "change-me-in-production"
+    frontend_url: str = "http://localhost:3009"
+    session_cookie_secure: bool = False
 
     @property
     def cors_origin_list(self) -> list[str]:

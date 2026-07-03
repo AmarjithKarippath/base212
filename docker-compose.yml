@@ -6,6 +6,9 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
+    environment:
+      FRONTEND_URL: http://localhost:3009
+      GOOGLE_REDIRECT_URI: http://localhost:3009/api/auth/google/callback
     ports:
       - "8008:8000"
     restart: unless-stopped

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Signing in…</title>
+  </head>
+  <body>
+    <script>
+      window.opener?.postMessage({ type: 'auth-success' }, window.location.origin)
+      window.close()
+      window.setTimeout(function () {
+        window.location.href = '/'
+      }, 500)
+    </script>
+    <p>Signing you in…</p>
+  </body>
+</html>

@@ -1,9 +1,10 @@
-import type { ChatResponse, RoleCatalog } from './types'
+import type { ChatHistoryItem, ChatResponse, RoleCatalog, UserProfile } from './types'
 
 const API_BASE = '/api'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(init?.headers ?? {}),
@@ -24,6 +25,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(detail)
   }
 
+  if (response.status === 204) {
+    return undefined as T
+  }
+
   return response.json() as Promise<T>
 }
 
@@ -31,9 +36,34 @@ export function fetchRoles(): Promise<RoleCatalog> {
   return request<RoleCatalog>('/roles')
 }
 
-export function sendChat(message: string, roleIds: string[]): Promise<ChatResponse> {
+export function fetchMe(): Promise<UserProfile | null> {
+  return request<UserProfile | null>('/auth/me')
+}
+
+export function logout(): Promise<void> {
+  return request<void>('/auth/logout', { method: 'POST' })
+}
+
+export function sendChat(
+  message: string,
+  roleIds: string[],
+  history: ChatHistoryItem[],
+): Promise<ChatResponse> {
   return request<ChatResponse>('/chat', {
     method: 'POST',
-    body: JSON.stringify({ message, role_ids: roleIds }),
+    body: JSON.stringify({ message, role_ids: roleIds, history }),
   })
+}
+
+export function startGoogleLogin(popup = false) {
+  const url = popup
+    ? `${API_BASE}/auth/google/login?popup=true`
+    : `${API_BASE}/auth/google/login`
+
+  if (popup) {
+    window.open(url, 'base212-google-login', 'width=520,height=680')
+    return
+  }
+
+  window.location.href = url
 }

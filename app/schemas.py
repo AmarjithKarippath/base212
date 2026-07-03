@@ -34,9 +34,15 @@ class SelectedRole(BaseModel):
     category: str
 
 
+class HistoryMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1)
     role_ids: list[str] = Field(min_length=1)
+    history: list[HistoryMessage] = Field(default_factory=list)
     model: str | None = None
     max_tokens: int = Field(default=16384, ge=1)
     temperature: float = Field(default=1.0, ge=0.0, le=2.0)

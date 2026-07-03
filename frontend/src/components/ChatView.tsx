@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { ChatMessage, RoleDefinition } from '../types'
+import type { ChatMessage, RoleDefinition, UserProfile } from '../types'
 import { AppHeader } from './AppHeader'
 import { ChatInput } from './ChatInput'
 import { MessageList } from './MessageList'
@@ -14,9 +14,12 @@ interface ChatViewProps {
   input: string
   loading: boolean
   error: string | null
+  user: UserProfile | null
   onInputChange: (value: string) => void
   onRoleChange: (ids: string[]) => void
   onSubmit: () => void
+  onSignIn: () => void
+  onSignOut: () => void
 }
 
 function isTypingKey(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -45,9 +48,12 @@ export function ChatView({
   input,
   loading,
   error,
+  user,
   onInputChange,
   onRoleChange,
   onSubmit,
+  onSignIn,
+  onSignOut,
 }: ChatViewProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const messagesRef = useRef<HTMLDivElement>(null)
@@ -132,7 +138,7 @@ export function ChatView({
 
   return (
     <div className={`chat-view ${hasMessages ? 'chat-view--active' : ''}`}>
-      <AppHeader />
+      <AppHeader user={user} onSignIn={onSignIn} onSignOut={onSignOut} />
 
       {!hasMessages ? (
         <header className="hero">
