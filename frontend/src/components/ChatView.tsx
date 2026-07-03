@@ -142,10 +142,9 @@ export function ChatView({
 
       {!hasMessages ? (
         <header className="hero">
-          <h1 className="hero__title">Turn your ideas into action</h1>
+          <h1 className="hero__title">Don&apos;t build alone.</h1>
           <p className="hero__subtitle">
-            base212 lets you build smarter decisions in minutes with your AI team.
-            Pick roles, ask a question, and get a combined expert response.
+            Pressure-test your idea at every step with your AI team.
           </p>
         </header>
       ) : (
