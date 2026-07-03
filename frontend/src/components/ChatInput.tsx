@@ -5,6 +5,8 @@ interface ChatInputProps {
   loading: boolean
   disabled: boolean
   onChange: (value: string) => void
+  onFocus?: () => void
+  onKeyDown?: (event: KeyboardEvent<HTMLTextAreaElement>) => void
   onSubmit: () => void
 }
 
@@ -13,9 +15,12 @@ export function ChatInput({
   loading,
   disabled,
   onChange,
+  onFocus,
+  onKeyDown,
   onSubmit,
 }: ChatInputProps) {
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    onKeyDown?.(event)
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
       if (!loading && !disabled && value.trim()) {
@@ -33,6 +38,7 @@ export function ChatInput({
         value={value}
         disabled={loading}
         onChange={(event) => onChange(event.target.value)}
+        onFocus={onFocus}
         onKeyDown={handleKeyDown}
       />
       <button
