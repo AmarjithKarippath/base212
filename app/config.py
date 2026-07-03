@@ -11,7 +11,11 @@ class Settings(BaseSettings):
     novita_api_key: str = ""
     novita_base_url: str = "https://api.novita.ai/openai"
     default_model: str = "openai/gpt-oss-120b"
-    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3009,http://127.0.0.1:3009"
+    cors_origins: str = (
+        "http://localhost:5173,http://127.0.0.1:5173,"
+        "http://localhost:3009,http://127.0.0.1:3009,"
+        "https://www.base212.com,https://base212.com"
+    )
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -1,0 +1,7 @@
+base212.com {
+	redir https://www.base212.com{uri} permanent
+}
+
+www.base212.com {
+	reverse_proxy frontend:80
+}
