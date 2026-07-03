@@ -157,6 +157,32 @@ curl -I https://www.base212.com
 
 Caddy obtains and renews Let's Encrypt certificates automatically once DNS is live and ports 80/443 are reachable.
 
+### Google Search Console
+
+After deploy, submit the sitemap in [Google Search Console](https://search.google.com/search-console):
+
+1. Add property: `https://www.base212.com`
+2. Verify domain ownership (DNS TXT record or HTML file)
+3. Go to **Sitemaps** → submit:
+
+```
+https://www.base212.com/sitemap.xml
+```
+
+These files are served from the frontend build:
+
+| URL | File |
+|-----|------|
+| https://www.base212.com/sitemap.xml | `frontend/public/sitemap.xml` |
+| https://www.base212.com/robots.txt | `frontend/public/robots.txt` |
+
+Verify they are reachable:
+
+```bash
+curl https://www.base212.com/sitemap.xml
+curl https://www.base212.com/robots.txt
+```
+
 ### Production files
 
 | File | Purpose |
