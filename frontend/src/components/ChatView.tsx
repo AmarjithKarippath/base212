@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChatMessage, RoleDefinition } from '../types'
 import { AppHeader } from './AppHeader'
 import { ChatInput } from './ChatInput'
@@ -17,6 +17,15 @@ interface ChatViewProps {
   onInputChange: (value: string) => void
   onRoleChange: (ids: string[]) => void
   onSubmit: () => void
+}
+
+function isTypingKey(event: KeyboardEvent<HTMLTextAreaElement>) {
+  return (
+    event.key.length === 1 &&
+    !event.ctrlKey &&
+    !event.metaKey &&
+    !event.altKey
+  )
 }
 
 export function ChatView({
@@ -37,6 +46,19 @@ export function ChatView({
   const [teamVisible, setTeamVisible] = useState(true)
 
   const hasMessages = messages.length > 0
+  const teamCollapsed = hasMessages && !teamVisible
+
+  const hideTeam = useCallback(() => {
+    if (hasMessages) {
+      setTeamVisible(false)
+    }
+  }, [hasMessages])
+
+  const showTeam = useCallback(() => {
+    if (hasMessages) {
+      setTeamVisible(true)
+    }
+  }, [hasMessages])
 
   useEffect(() => {
     programmaticScroll.current = true
@@ -59,12 +81,12 @@ export function ChatView({
       if (programmaticScroll.current) {
         return
       }
-      setTeamVisible(false)
+      hideTeam()
     }
 
     container.addEventListener('scroll', handleScroll, { passive: true })
     return () => container.removeEventListener('scroll', handleScroll)
-  }, [hasMessages])
+  }, [hasMessages, hideTeam])
 
   useEffect(() => {
     if (!hasMessages) {
@@ -75,23 +97,20 @@ export function ChatView({
   const handleInputChange = (value: string) => {
     onInputChange(value)
     if (value.length > 0) {
-      setTeamVisible(true)
-    }
-  }
-
-  const handleInputFocus = () => {
-    if (hasMessages) {
-      setTeamVisible(true)
+      showTeam()
     }
   }
 
   const handleInputKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (hasMessages && event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
-      setTeamVisible(true)
+    if (hasMessages && isTypingKey(event)) {
+      showTeam()
     }
   }
 
-  const teamCollapsed = hasMessages && !teamVisible
+  const handleSubmit = () => {
+    hideTeam()
+    onSubmit()
+  }
 
   return (
     <div className={`chat-view ${hasMessages ? 'chat-view--active' : ''}`}>
@@ -124,7 +143,7 @@ export function ChatView({
         </div>
       )}
 
-      <div className="chat-panel">
+      <div className={`chat-panel ${teamCollapsed ? 'chat-panel--compact' : ''}`}>
         <div
           className={`role-selector-wrap ${teamCollapsed ? 'role-selector-wrap--collapsed' : ''}`}
           aria-hidden={teamCollapsed}
@@ -143,12 +162,11 @@ export function ChatView({
           loading={loading}
           disabled={selectedRoleIds.length === 0}
           onChange={handleInputChange}
-          onFocus={handleInputFocus}
           onKeyDown={handleInputKeyDown}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
         />
         {error ? <p className="chat-panel__error">{error}</p> : null}
-        {selectedRoleIds.length === 0 ? (
+        {!teamCollapsed && selectedRoleIds.length === 0 ? (
           <p className="chat-panel__hint">Select at least one role to start.</p>
         ) : null}
       </div>
