@@ -20,17 +20,17 @@
 └─────────────────┘                 └─────────────────┘
 ```
 
-**Production (www.base212.com)**
+**Production (www.base212.com + CloudPanel)**
 
 ```
-Internet ──► Caddy (443/80, TLS) ──► nginx frontend ──► /api ──► FastAPI ──► Novita API
-              www.base212.com         (internal)              (internal)
+Internet ──► CloudPanel (TLS) ──► Docker frontend :3009 ──► /api ──► FastAPI ──► Novita API
+              www.base212.com         (127.0.0.1)                (internal)
 ```
 
 - **Frontend** — React + Vite, served by nginx in production
 - **Backend** — FastAPI, OpenAI-compatible client pointed at Novita
 - **Roles** — defined in `app/data/roles.json`, exposed via `GET /roles`
-- **Production** — Caddy terminates HTTPS; backend is not exposed publicly
+- **Production** — CloudPanel handles SSL and reverse proxy; backend is not exposed publicly
 
 ## Project structure
 
@@ -49,7 +49,7 @@ base212/
 │   ├── nginx.conf
 │   └── nginx.prod.conf
 ├── deploy/
-│   └── Caddyfile           # TLS + reverse proxy for www.base212.com
+│   └── cloudpanel.conf.example  # CloudPanel reverse proxy reference
 ├── scripts/
 │   └── deploy-prod.sh
 ├── Dockerfile              # Backend image
@@ -108,10 +108,10 @@ docker compose down
 
 ## Production deployment (www.base212.com)
 
-Production uses a separate compose file with:
+Production uses Docker + **CloudPanel** on your VPS for SSL and reverse proxy.
 
-- **Caddy** — automatic HTTPS on ports 80/443 for `www.base212.com` and `base212.com`
-- **nginx** — serves the React build and proxies `/api` to the backend
+- **CloudPanel** — HTTPS and reverse proxy for `www.base212.com`
+- **Docker frontend** — bound to `127.0.0.1:3009`, serves React and proxies `/api`
 - **FastAPI** — internal only (not exposed to the public internet)
 
 ### 1. DNS
@@ -130,32 +130,41 @@ cp .env.production.example .env.production
 # Set NOVITA_API_KEY in .env.production
 ```
 
-### 3. Build and deploy
+### 3. Build and deploy Docker
+
+```bash
+make prod-up
+```
+
+Or:
 
 ```bash
 ./scripts/deploy-prod.sh
 ```
 
-Or manually:
+This starts the stack on **http://127.0.0.1:3009**.
 
-```bash
-docker compose -f docker-compose.prod.yml up --build -d
-```
+### 4. Configure CloudPanel
 
-| URL | Purpose |
-|-----|---------|
-| https://www.base212.com | App |
-| https://base212.com | Redirects to www |
+In CloudPanel:
 
-### 4. Verify
+1. Create site: **www.base212.com**
+2. Enable **SSL** (Let's Encrypt)
+3. Open **Vhost → Reverse Proxy**
+4. Set upstream to: `http://127.0.0.1:3009`
+
+Optionally redirect `base212.com` → `www.base212.com` via a second site or CloudPanel redirect rule.
+
+See `deploy/cloudpanel.conf.example` for an nginx reference config.
+
+### 5. Verify
 
 ```bash
 docker compose -f docker-compose.prod.yml ps
-docker compose -f docker-compose.prod.yml logs -f caddy
+docker compose -f docker-compose.prod.yml logs -f
 curl -I https://www.base212.com
+curl https://www.base212.com/sitemap.xml
 ```
-
-Caddy obtains and renews Let's Encrypt certificates automatically once DNS is live and ports 80/443 are reachable.
 
 ### Google Search Console
 
@@ -187,10 +196,10 @@ curl https://www.base212.com/robots.txt
 
 | File | Purpose |
 |------|---------|
-| `docker-compose.prod.yml` | Production stack (backend + frontend + Caddy) |
+| `docker-compose.prod.yml` | Production stack (backend + frontend) |
 | `frontend/Dockerfile.prod` | Builds optimized React app with production nginx |
 | `frontend/nginx.prod.conf` | nginx config for `www.base212.com` |
-| `deploy/Caddyfile` | TLS termination and reverse proxy |
+| `deploy/cloudpanel.conf.example` | CloudPanel reverse proxy reference |
 | `.env.production` | Production secrets (not committed) |
 
 ## Local development
@@ -272,7 +281,7 @@ When multiple roles are selected, the backend builds a structured system prompt 
 
 - **Backend:** FastAPI, OpenAI Python SDK, Pydantic Settings
 - **Frontend:** React 19, TypeScript, Vite, react-markdown, remark-gfm
-- **Infrastructure:** Docker, nginx, Caddy, uvicorn
+- **Infrastructure:** Docker, nginx, CloudPanel, uvicorn
 
 ## License
 

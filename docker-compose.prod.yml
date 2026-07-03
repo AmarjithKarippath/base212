@@ -17,26 +17,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
-    expose:
-      - "80"
+    ports:
+      - "127.0.0.1:3009:80"
     depends_on:
       - backend
     restart: always
-
-  caddy:
-    container_name: base212-caddy
-    image: caddy:2-alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - frontend
-    restart: always
-
-volumes:
-  caddy_data:
-  caddy_config:

@@ -1,0 +1,38 @@
+# CloudPanel reverse proxy reference for base212
+#
+# In CloudPanel:
+# 1. Create site: www.base212.com
+# 2. Enable SSL (Let's Encrypt)
+# 3. Sites → www.base212.com → Vhost → Reverse Proxy
+# 4. Set upstream to: http://127.0.0.1:3009
+#
+# Optional: create a second site for base212.com and redirect to www.base212.com
+#
+# The Docker frontend nginx handles:
+#   /        → React app
+#   /api/*   → FastAPI backend (internal Docker network)
+#
+# Start the stack first:
+#   make prod-up
+
+upstream base212_frontend {
+    server 127.0.0.1:3009;
+}
+
+server {
+    listen 80;
+    listen 443 ssl http2;
+    server_name www.base212.com;
+
+    # SSL is managed by CloudPanel — do not add cert paths here manually.
+
+    location / {
+        proxy_pass http://base212_frontend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+    }
+}
