@@ -28,6 +28,15 @@ function isTypingKey(event: KeyboardEvent<HTMLTextAreaElement>) {
   )
 }
 
+const SCROLL_BOTTOM_THRESHOLD = 48
+
+function isScrolledToBottom(container: HTMLDivElement) {
+  return (
+    container.scrollHeight - container.scrollTop - container.clientHeight <=
+    SCROLL_BOTTOM_THRESHOLD
+  )
+}
+
 export function ChatView({
   messages,
   roles,
@@ -81,12 +90,21 @@ export function ChatView({
       if (programmaticScroll.current) {
         return
       }
-      hideTeam()
+
+      if (isScrolledToBottom(container)) {
+        showTeam()
+      } else {
+        hideTeam()
+      }
+    }
+
+    if (container.scrollHeight <= container.clientHeight) {
+      showTeam()
     }
 
     container.addEventListener('scroll', handleScroll, { passive: true })
     return () => container.removeEventListener('scroll', handleScroll)
-  }, [hasMessages, hideTeam])
+  }, [hasMessages, hideTeam, showTeam, messages, loading])
 
   useEffect(() => {
     if (!hasMessages) {
