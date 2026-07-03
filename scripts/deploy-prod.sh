@@ -11,10 +11,12 @@ if [[ ! -f .env.production ]]; then
 fi
 
 echo "Building production images..."
-docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml build backend frontend
 
 echo "Starting production stack..."
-docker compose -f docker-compose.prod.yml up -d
+mkdir -p data/postgres
+docker compose -f docker-compose.prod.yml up -d db
+docker compose -f docker-compose.prod.yml up --build -d backend frontend
 
 echo ""
 echo "Production stack is running on http://127.0.0.1:3009"

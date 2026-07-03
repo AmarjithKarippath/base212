@@ -101,10 +101,45 @@ docker compose up --build
 Background mode:
 
 ```bash
-docker compose up --build -d
+make up
 docker compose logs -f
-docker compose down
+make down
 ```
+
+Do **not** run `docker compose down -v` unless you intentionally want to wipe the database.
+
+## Database persistence
+
+User accounts, login history, sessions, and analytics stats are stored in **PostgreSQL**. Data is kept on the host at:
+
+```
+data/postgres/
+```
+
+That directory survives frontend/backend rebuilds and container restarts. Deploy commands start the database first, then rebuild only the app containers.
+
+Backup manually:
+
+```bash
+chmod +x scripts/backup-db.sh
+./scripts/backup-db.sh
+```
+
+Backups are written to `backups/`.
+
+If you previously used an anonymous Docker volume and need to migrate existing data:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d db
+mkdir -p data/postgres
+docker run --rm \
+  -v saasai_postgres_data:/from \
+  -v "$(pwd)/data/postgres:/to" \
+  alpine sh -c "cp -a /from/. /to/"
+docker compose -f docker-compose.prod.yml restart db
+```
+
+Replace `saasai_postgres_data` with your old volume name from `docker volume ls`.
 
 ## Production deployment (www.base212.com)
 

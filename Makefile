@@ -54,7 +54,9 @@ docker-build: env ## Build local Docker images
 
 .PHONY: up
 up: env ## Start local Docker stack (frontend :3009, backend :8008)
-	$(COMPOSE) -f $(COMPOSE_FILE) up --build -d
+	@mkdir -p data/postgres
+	$(COMPOSE) -f $(COMPOSE_FILE) up -d db
+	$(COMPOSE) -f $(COMPOSE_FILE) up --build -d backend frontend
 
 .PHONY: down
 down: ## Stop local Docker stack
@@ -73,7 +75,9 @@ prod-build: env-prod ## Build production Docker images
 
 .PHONY: prod-up
 prod-up: env-prod ## Start production stack (www.base212.com)
-	$(COMPOSE) -f $(COMPOSE_PROD) up --build -d
+	@mkdir -p data/postgres
+	$(COMPOSE) -f $(COMPOSE_PROD) up -d db
+	$(COMPOSE) -f $(COMPOSE_PROD) up --build -d backend frontend
 
 .PHONY: prod-down
 prod-down: ## Stop production stack
@@ -83,12 +87,19 @@ prod-down: ## Stop production stack
 prod-logs: ## Tail production Docker logs
 	$(COMPOSE) -f $(COMPOSE_PROD) logs -f
 
+.PHONY: backup-db
+backup-db: ## Dump PostgreSQL to backups/
+	@chmod +x scripts/backup-db.sh
+	@COMPOSE_FILE=$(COMPOSE_PROD) ./scripts/backup-db.sh
+
 .PHONY: prod-restart
 prod-restart: prod-down prod-up ## Restart production stack
 
 .PHONY: prod-deploy
 prod-deploy: env-prod prod-build ## Build and deploy production stack
-	$(COMPOSE) -f $(COMPOSE_PROD) up -d
+	@mkdir -p data/postgres
+	$(COMPOSE) -f $(COMPOSE_PROD) up -d db
+	$(COMPOSE) -f $(COMPOSE_PROD) up -d backend frontend
 	@echo "Production stack is running on http://127.0.0.1:3009"
 	@echo "Configure CloudPanel reverse proxy: www.base212.com → http://127.0.0.1:3009"
 

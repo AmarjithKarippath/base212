@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-base212}
       POSTGRES_DB: ${POSTGRES_DB:-base212}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-base212} -d ${POSTGRES_DB:-base212}"]
       interval: 5s
@@ -46,5 +46,3 @@ services:
       - backend
     restart: always
 
-volumes:
-  postgres_data:
