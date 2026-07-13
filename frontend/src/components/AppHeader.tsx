@@ -9,6 +9,12 @@ interface AppHeaderProps {
 export function AppHeader({ user, onSignIn, onSignOut }: AppHeaderProps) {
   return (
     <header className="app-header">
+      <div className="app-header__left">
+        <a className="app-header__blog" href="/blogs">
+          Blog
+        </a>
+      </div>
+
       <div className="app-header__brand">
         <span className="app-header__mark">212</span>
         <span className="app-header__name">base212</span>
@@ -39,7 +45,7 @@ export function AppHeader({ user, onSignIn, onSignOut }: AppHeaderProps) {
         ) : (
           <button type="button" className="app-header__signin" onClick={onSignIn}>
             <GoogleMark />
-            Sign in with Google
+            Sign in
           </button>
         )}
       </div>

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { fetchMe, fetchRoles, logout, recordVisit, sendChat, startGoogleLogin } from './api'
 import { AdminPanel } from './components/AdminPanel'
+import { BlogIndex } from './components/BlogIndex'
+import { BlogPostPage } from './components/BlogPostPage'
 import { ChatView } from './components/ChatView'
 import { LoginModal } from './components/LoginModal'
 import type { ChatMessage, RoleDefinition, UserProfile } from './types'
@@ -10,7 +12,35 @@ function createId() {
   return crypto.randomUUID()
 }
 
+function getBlogSlug(pathname: string): string | null {
+  const match = pathname.match(/^\/blogs\/([^/]+)\/?$/)
+  return match?.[1] ?? null
+}
+
 export default function App() {
+  const pathname = window.location.pathname
+  const blogSlug = getBlogSlug(pathname)
+
+  if (pathname === '/blogs') {
+    return (
+      <div className="app">
+        <BlogIndex />
+      </div>
+    )
+  }
+
+  if (blogSlug) {
+    return (
+      <div className="app">
+        <BlogPostPage slug={blogSlug} />
+      </div>
+    )
+  }
+
+  return <MainApp />
+}
+
+function MainApp() {
   const [roles, setRoles] = useState<RoleDefinition[]>([])
   const [allowMultiple, setAllowMultiple] = useState(true)
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([])
