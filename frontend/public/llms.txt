@@ -1,0 +1,35 @@
+# base212
+
+> Don't build alone. Pressure-test your idea at every step with your AI team.
+
+base212 (https://www.base212.com) is an AI team chat app for solo founders, indie hackers, and early-stage builders. Users pick one or more expert roles, ask a question, and receive one combined response that merges every selected perspective — including trade-offs when roles disagree.
+
+The product is free to start: the first chat requires no sign-in. Google sign-in is required from the second chat onward.
+
+## Product
+
+- [Home](https://www.base212.com/): Main app — select AI roles, chat, and get a unified expert answer
+- [Blog](https://www.base212.com/blogs): Guides for solo founders, micro SaaS builders, and indie hackers
+
+## AI Team Roles
+
+Users can select one or more roles per session. Responses combine all selected roles into a single answer.
+
+- Co-Founder (Business): Startup strategy, product-market fit, risks, blind spots, and execution priorities
+- Software Architect (Engineering): Scalable, secure, maintainable system design and technical trade-offs
+- Product Manager (Product): Customer needs, prioritization, UX, and measurable outcomes
+- Marketing Advisor (Marketing): Positioning, messaging, acquisition, retention, and growth channels
+
+## Blog
+
+- [10 Micro SaaS Ideas for 2026 That Solo Founders Can Build With AI](https://www.base212.com/blogs/micro-saas-ideas-2026-solo-founders-ai): Profitable micro SaaS ideas to validate and build with an AI co-founder team
+- [How Indie Hackers Are Using AI Teams to Hit $10K MRR Faster](https://www.base212.com/blogs/indie-hackers-ai-teams-10k-mrr): Strategies for faster validation, pricing, and growth with AI collaboration
+- [Build in Public: How to Share Your Journey with an AI Team Behind You](https://www.base212.com/blogs/build-in-public-ai-team-support): Using AI support while sharing your startup journey publicly
+- [Vertical SaaS Opportunities in 2026: Finding Your Niche with AI](https://www.base212.com/blogs/vertical-saas-2026-niche-ai): How to find and validate a vertical SaaS niche with AI
+- [AI Agents vs Traditional Development: A Guide for Solo Founders](https://www.base212.com/blogs/ai-agents-solo-founders-guide): How AI agents change MVP building for bootstrapped founders
+
+## Optional
+
+- [Sitemap](https://www.base212.com/sitemap.xml): Full list of indexable URLs
+- [Robots](https://www.base212.com/robots.txt): Crawler rules — all paths allowed
+- [Open Graph image](https://www.base212.com/og-image.jpg): Social preview image for the site
