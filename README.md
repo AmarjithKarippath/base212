@@ -78,6 +78,35 @@ cp .env.example .env
 |----------|----------|-------------|
 | `NOVITA_API_KEY` | Yes | Your Novita API key |
 | `CORS_ORIGINS` | No | Comma-separated allowed origins (defaults include local dev ports) |
+| `GOOGLE_CLIENT_ID` | For login | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | For login | Google OAuth client secret |
+
+### Google OAuth setup
+
+Sign-in uses Google OAuth. The redirect URI is built from the domain you visit (via nginx `Host` + `X-Forwarded-Proto`), so it must be registered exactly in [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+
+1. Create an OAuth 2.0 **Web application** client
+2. Under **Authorized redirect URIs**, add every URL you use:
+
+```
+https://www.base212.com/api/auth/google/callback
+https://base212.com/api/auth/google/callback
+http://localhost:3009/api/auth/google/callback
+http://127.0.0.1:3009/api/auth/google/callback
+```
+
+3. Under **Authorized JavaScript origins**, add:
+
+```
+https://www.base212.com
+https://base212.com
+http://localhost:3009
+http://127.0.0.1:3009
+```
+
+4. Copy the client ID and secret into `.env` (local) or `.env.production` (server)
+
+If you see `Error 400: redirect_uri_mismatch`, the URI sent by the app is not in that list. Check which domain you opened (with or without `www`) and add the matching callback URL.
 
 Optional backend settings (with defaults):
 

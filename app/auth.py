@@ -20,6 +20,23 @@ oauth.register(
 SESSION_COOKIE = "base212_session"
 
 
+def resolve_public_base_url(request: Request) -> str:
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    scheme = (
+        forwarded_proto.split(",")[0].strip()
+        if forwarded_proto
+        else request.url.scheme
+    )
+    host = request.headers.get("host") or request.url.netloc
+    return f"{scheme}://{host}"
+
+
+def resolve_google_redirect_uri(request: Request) -> str:
+    if request.headers.get("host"):
+        return f"{resolve_public_base_url(request)}/api/auth/google/callback"
+    return settings.google_redirect_uri
+
+
 def _encode_session(user: dict) -> str:
     payload = {
         "sub": user["sub"],
@@ -66,9 +83,10 @@ async def start_google_login(request: Request, popup: bool = False) -> RedirectR
         raise HTTPException(status_code=503, detail="Google login is not configured")
 
     state = "popup" if popup else "redirect"
+    redirect_uri = resolve_google_redirect_uri(request)
     return await oauth.google.authorize_redirect(
         request,
-        settings.google_redirect_uri,
+        redirect_uri,
         state=state,
     )
 
@@ -78,7 +96,11 @@ async def finish_google_login(request: Request) -> RedirectResponse:
         raise HTTPException(status_code=503, detail="Google login is not configured")
 
     try:
-        token = await oauth.google.authorize_access_token(request)
+        redirect_uri = resolve_google_redirect_uri(request)
+        token = await oauth.google.authorize_access_token(
+            request,
+            redirect_uri=redirect_uri,
+        )
     except Exception as exc:
         raise HTTPException(status_code=400, detail="Google login failed") from exc
 
@@ -88,10 +110,11 @@ async def finish_google_login(request: Request) -> RedirectResponse:
 
     state = request.query_params.get("state", "redirect")
     popup = state == "popup"
+    frontend_url = resolve_public_base_url(request)
     redirect_url = (
-        f"{settings.frontend_url}/auth/callback.html"
+        f"{frontend_url}/auth/callback.html"
         if popup
-        else settings.frontend_url
+        else frontend_url
     )
 
     response = RedirectResponse(url=redirect_url, status_code=302)
