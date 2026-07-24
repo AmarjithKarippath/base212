@@ -57,7 +57,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(SessionMiddleware, secret_key=settings.jwt_secret)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.jwt_secret,
+    https_only=settings.session_cookie_secure,
+    same_site="lax",
+)
 
 
 @app.get("/health")

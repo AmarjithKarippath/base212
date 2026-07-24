@@ -90,10 +90,10 @@ async def start_google_login(request: Request, popup: bool = False) -> RedirectR
 
     state = "popup" if popup else "redirect"
     redirect_uri = resolve_google_redirect_uri(request)
+    request.session["oauth_login_mode"] = state
     return await oauth.google.authorize_redirect(
         request,
         redirect_uri,
-        state=state,
     )
 
 
@@ -102,11 +102,7 @@ async def finish_google_login(request: Request) -> RedirectResponse:
         raise HTTPException(status_code=503, detail="Google login is not configured")
 
     try:
-        redirect_uri = resolve_google_redirect_uri(request)
-        token = await oauth.google.authorize_access_token(
-            request,
-            redirect_uri=redirect_uri,
-        )
+        token = await oauth.google.authorize_access_token(request)
     except Exception as exc:
         raise HTTPException(status_code=400, detail="Google login failed") from exc
 
@@ -114,8 +110,8 @@ async def finish_google_login(request: Request) -> RedirectResponse:
     if not user_info:
         raise HTTPException(status_code=400, detail="Google login failed")
 
-    state = request.query_params.get("state", "redirect")
-    popup = state == "popup"
+    login_mode = request.session.pop("oauth_login_mode", "redirect")
+    popup = login_mode == "popup"
     frontend_url = resolve_public_base_url(request)
     redirect_url = (
         f"{frontend_url}/auth/callback.html"
