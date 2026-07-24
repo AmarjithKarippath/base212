@@ -28,6 +28,12 @@ def resolve_public_base_url(request: Request) -> str:
         else request.url.scheme
     )
     host = request.headers.get("host") or request.url.netloc
+
+    # Reverse proxies (e.g. CloudPanel) often connect to Docker over HTTP while the
+    # public site is HTTPS — force https for production domains.
+    if host.endswith("base212.com") and scheme == "http":
+        scheme = "https"
+
     return f"{scheme}://{host}"
 
 
